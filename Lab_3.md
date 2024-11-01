@@ -105,6 +105,31 @@ state back to 1 (not 0).
 
 Use the attached testbench script ([`verify.sh`](task1/verify.sh)) to check your answer.
 
+```verilog
+module lfsr(
+    input   logic       clk,
+    input   logic       rst,
+    input   logic       en,
+    output  logic [3:0] data_out
+);
+
+    logic[3:0] sreg;
+
+always_ff @(posedge clk, posedge rst) 
+    if(rst) 
+        sreg <= 4'b1;
+    else    
+        sreg <= {sreg[2:0],sreg[3]^sreg[2]};
+
+assign data_out = sreg;
+endmodule
+```
+
+*It is worth remembering that:*
+>`sreg <= {sreg[2:0],sreg[3]^sreg[2]}`
+
+*is short-hand for shifting all the registers by one and appending the last value into the beginning of the shift register*
+
 ___
 
 <p align="center">TEST YOURSELF CHALLENGE </p>
@@ -118,6 +143,28 @@ Test your design, using the [`verify_7.sh`](task1/verify_7.sh) script.
 The 7th order primitive polynomial is:
 
 <p align="center"> <img src="images/equation.jpg" /> </p>
+
+*It is rather a simple endeavour to adapt the code to fit this new polynomial...*
+
+```verilog
+module lfsr_7 (
+    input   logic       clk,
+    input   logic       rst,
+    input   logic       en,
+    output  logic [6:0] data_out
+);
+
+    logic [6:0] sreg;
+
+    always_ff @ (posedge clk, posedge rst)
+        if(rst) 
+            sreg<=7'b1;
+        else
+            sreg<= {sreg[5:0],sreg[6]^sreg[2]}
+
+assign data_out = sreg;
+endmodule
+```
 
 ---
 ## Task 2 - Formula 1 Light Sequence
