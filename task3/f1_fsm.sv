@@ -13,7 +13,7 @@ module f1_fsm (
     logic en_d, en_pulse;
 
     // Edge detection logic for `en`
-    always_ff @(posedge clk or posedge rst) begin
+    always_ff @(posedge clk) begin
         if (rst) begin
             en_d <= 1'b0;
             en_pulse <= 1'b0;
@@ -24,7 +24,7 @@ module f1_fsm (
     end
         
     // State register update (advance only on en_pulse)
-    always_ff @(posedge clk or posedge rst) 
+    always_ff @(posedge clk) 
         if (rst)
             current_state <= S0;
         else if (en_pulse)

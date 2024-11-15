@@ -217,13 +217,15 @@ module f1_fsm (
     logic en_d, en_pulse;
 
     // Edge detection logic for `en`
-    always_ff @(posedge clk or posedge rst) 
-        if (rst) 
+    always_ff @(posedge clk or posedge rst) begin
+        if (rst) begin
             en_d <= 1'b0;
             en_pulse <= 1'b0;
-        else 
+        end else begin
             en_d <= en;
             en_pulse <= en && ~en_d;  // Detect rising edge of `en`
+        end
+    end
         
     // State register update (advance only on en_pulse)
     always_ff @(posedge clk or posedge rst) 
@@ -293,6 +295,8 @@ The testbench flashes the neopixel strip LEDs on and off at a rate determined by
 
 Compile and test the **_clktick.sv_** module.  Use the metronome app on Google (just search for metronome) to generate a beat at 60 bpm.  Now adjust the rotary switch to change the flash rate of the neopixels to match the metronome.  The **_vbdValue()_** shown on bottom left of the TFT display is the value for N which gives a tick period of 1 second! (Why?)
 
+*Value found was 57*
+
 The reason that we need to do this calibration is that the Verilator simulation of your design is NOT in real time.  Every computer will work at different rate and therefore takes different amount of time to simulate one cycle of the clock signal _clk_. For a 14" M1 Macbook Pro (my computer), N is around 24 for a tick period of 1 sec (i.e. one tick pulse every second).
 
 ___
@@ -304,6 +308,42 @@ ___
 Implement the following design by combining **_clkctick.sv_** with **_f1_fsm.sv_** so that the F1 light sequence is cycle through automatically with 1 second delay per state transition.
 
 <p align="center"> <img src="images/f1_sequence.jpg" /> </p>
+
+```verilog
+//toplevel.sv
+module toplevel #(
+    parameter   D_WIDTH = 8
+)(
+    //interface signals
+    input   logic               clk,    //clock
+    input   logic               rst,    //reset
+    input   logic               en,     //enable
+    input   logic [15:0]        N,   //increment for addr counter
+    output  logic [D_WIDTH-1:0] dout    //output data
+);
+
+    logic   tick;   //interconnect wire
+
+clktick clockTick(
+    .clk (clk),
+    .rst (rst),
+    .en (en),
+    .N (N),
+    .tick (tick)
+);
+
+f1_fsm f1Fsm(
+    .clk (clk),
+    .rst (rst),
+    .en (tick),
+    .data_out (dout)
+);
+
+endmodule
+
+````
+
+*Top level schematic. The testbench file needs minimal changes.*
 
 ---
 ##  Task 4 - Full implementation of F1 starting light (OPTIONAL)
